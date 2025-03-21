@@ -148,6 +148,22 @@ def process_user_input(user_input):
     
     # If we're waiting for a student's understanding response
     if lesson_state["understanding_check"]:
+        # Check if the response is a simple "yes" to continue
+        if user_input.lower().strip() in ["yes", "ready", "continue", "next", "yes please", "i'm ready"]:
+            # Prepare a transition to the next lesson
+            if lesson_state["current_lesson"] < 3:
+                next_lesson_num = lesson_state["current_lesson"] + 1
+                transition_message = f"Great! Let's move on to Lesson {next_lesson_num}. What specific questions do you have about {st.session_state.current_topic} that you'd like me to address in this lesson?"
+                lesson_state["understanding_check"] = False
+                lesson_state["current_lesson"] += 1
+                return transition_message
+            else:
+                # All lessons completed
+                lesson_state["lessons_completed"] = True
+                lesson_state["understanding_check"] = False
+                return f"Excellent! We've completed all three lessons on {st.session_state.current_topic}. Is there anything specific from these lessons you'd like me to clarify further?"
+        
+        # For other responses, evaluate understanding
         response = generate_response(user_input, api_key, is_understanding_check=True)
         lesson_state["understanding_check"] = False
         
